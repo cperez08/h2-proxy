@@ -30,8 +30,8 @@ func TestNewProxyFromFile(t *testing.T) {
 
 	os.Setenv("H2_PROXY_TARGET_HOST", "127.0.0.1")
 	os.Setenv("H2_PROXY_TARGET_PORT", "8080")
-	cfg, err = NewProxyFromFile("../config/noexists.yaml")
-	assert.Equal(t, cfg.TargetHost, "127.0.0.1")
+	Defaultcfg, _ := NewProxyFromFile("../config/noexists.yaml")
+	assert.Equal(t, Defaultcfg.TargetHost, "127.0.0.1")
 
 	// force malformed yaml
 	fileName := "config2.yaml"
@@ -53,7 +53,7 @@ func TestNewProxyFromFile(t *testing.T) {
 	bt = []byte(`proxy_address: '0.0.0.0:8080'`)
 	CreateTmpFile(fileName, bt)
 	_, err = NewProxyFromFile("../config/" + fileName)
-	if errMarshal == nil {
+	if err == nil {
 		t.Log("expecting error reading host and port")
 		t.FailNow()
 	}

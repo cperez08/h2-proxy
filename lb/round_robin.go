@@ -15,11 +15,12 @@ type RoundRobinLB struct {
 	next int
 }
 
+// NewRoundRobin returns a new roundRobin instance
 func NewRoundRobin() LoadBalancer {
 	return &RoundRobinLB{}
 }
 
-// Balance return the already balanced connection
+// PickConnection picks an existing connection balanced by round robin alg
 func (l *RoundRobinLB) PickConnection(pool []*conn.Connection) *conn.Connection {
 	l.m.Lock()
 	defer l.m.Unlock()

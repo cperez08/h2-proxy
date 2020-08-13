@@ -66,7 +66,7 @@ func TestConnectPool(t *testing.T) {
 
 	AddConnection(&pool, &Connection{Address: "localhost:8080", IsActive: true, IsConnected: true})
 	if err = ConnectPool(tr, pool); err != nil {
-		t.Log("should not fail since all connections are active and markes as connected")
+		t.Log("should not fail since all connections are active and marks as connected")
 		t.Fail()
 	}
 }

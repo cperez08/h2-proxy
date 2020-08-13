@@ -19,6 +19,7 @@ const (
 	forwardedHostHeader = "X-Forwarded-Host"
 )
 
+// Handler handles the proxy requests
 func Handler(config *config.ProxyConfig, cli *http.Client) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -79,6 +80,7 @@ func Handler(config *config.ProxyConfig, cli *http.Client) http.HandlerFunc {
 	})
 }
 
+// PrintLog prints in stout basic information about the request and response
 func PrintLog(t time.Time, reqSize int, resSize int, r *http.Request, compact bool) {
 	reqID := r.Header.Get("X-Request-Id")
 	logStr := ""
@@ -86,7 +88,7 @@ func PrintLog(t time.Time, reqSize int, resSize int, r *http.Request, compact bo
 	if compact {
 		logStr = `id: %s | p: %s | pr: %s | ms: %d | rq_ln: %d | rs_ln: %d`
 	} else {
-		logStr = `{"rq_id": "%s", "rq_path": "%s", "rq_proto": "%s", "elapsed_time_ms": %d, "rq_lenght": %d, "rs_length": %d}`
+		logStr = `{"rq_id": "%s", "rq_path": "%s", "rq_proto": "%s", "elapsed_time_ms": %d, "rq_length": %d, "rs_length": %d}`
 	}
 
 	logStr = fmt.Sprintf(logStr,

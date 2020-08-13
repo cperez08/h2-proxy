@@ -14,6 +14,7 @@ const (
 	grpcStatus  = "grpc-status"
 )
 
+// HandleError ...
 func HandleError(w *http.ResponseWriter, r *http.Request, errMsg string) {
 	ct := r.Header.Get(contentType)
 	if strings.Contains(ct, "grpc") {
@@ -24,6 +25,7 @@ func HandleError(w *http.ResponseWriter, r *http.Request, errMsg string) {
 	HandleHTTPError(w, errMsg)
 }
 
+// HandleGRPCError ...
 func HandleGRPCError(w *http.ResponseWriter, ct, errMsg string) {
 	// Add headers empty body and trailers
 	(*w).Header().Set(contentType, ct)
@@ -34,6 +36,7 @@ func HandleGRPCError(w *http.ResponseWriter, ct, errMsg string) {
 	(*w).Header().Add(http.TrailerPrefix+grpcMessage, errMsg)
 }
 
+// HandleHTTPError ...
 func HandleHTTPError(w *http.ResponseWriter, errMsg string) {
 	(*w).WriteHeader(http.StatusInternalServerError)
 	(*w).Header().Add(contentType, "application/json")

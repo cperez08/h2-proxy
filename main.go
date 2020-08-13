@@ -17,11 +17,11 @@ import (
 	"github.com/cperez08/h2-proxy/proxy"
 )
 
-const ConfigDefaultLocation = "/etc/h2-proxy/config.yaml"
+const configDefaultLocation = "/etc/h2-proxy/config.yaml"
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	cfg, err := proxy.NewProxyFromFile(ConfigDefaultLocation)
+	cfg, err := proxy.NewProxyFromFile(configDefaultLocation)
 	if err != nil {
 		log.Fatal("error loading yaml config", err)
 	}

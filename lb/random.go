@@ -6,9 +6,10 @@ import (
 	"github.com/cperez08/h2-proxy/conn"
 )
 
+// RandomLB returns a random connection
 type RandomLB struct{}
 
-// Balance return the already balanced connection
+// PickConnection picks a random connection
 func (l *RandomLB) PickConnection(pool []*conn.Connection) *conn.Connection {
 	// avoid error in rand.Intn with 0 value
 	if len(pool) == 0 {

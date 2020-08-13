@@ -36,6 +36,7 @@ func (r *Resolver) GetCurrentIPs() []string {
 	return r.r.Addresses
 }
 
+// CloseResolver closes the resolver
 func (r *Resolver) CloseResolver() {
 	r.r.Close()
 }

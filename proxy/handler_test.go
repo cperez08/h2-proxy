@@ -195,7 +195,6 @@ func FakeHandler() http.HandlerFunc {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"status":"ok"}`))
 		} else {
-
 			w.Header().Add("Status-Code", fmt.Sprintf("%d", http2.ErrCodeInternal))
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(`{"status":"fail"}`))

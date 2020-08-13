@@ -32,7 +32,7 @@ func AddConnection(pool *[]*Connection, con *Connection) {
 	*pool = append(*pool, con)
 }
 
-// Connect creates the actual connections available in the pool
+// ConnectPool creates the actual connections available in the pool
 // for those connections marked as active and not connected
 func ConnectPool(t *http2.Transport, pool []*Connection) error {
 	for _, p := range pool {

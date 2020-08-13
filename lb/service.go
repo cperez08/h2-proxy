@@ -7,6 +7,7 @@ import (
 // MaxRetries maximum number of attempts to get an active connections from the pool
 const MaxRetries = 10
 
+// LoadBalancer service
 type LoadBalancer interface {
 	// PickConnection returns the balanced connection according
 	// to the chosen algorithm
