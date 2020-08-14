@@ -36,9 +36,13 @@ jobs:
       - name: test
         run: go test -race ./...
 
+      - name: generate coverage report
+        run: make gen-coverage
+
       - name: push coverage report
         if: success() && matrix.go == 1.14 && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v1
         with:
           token: 4e1c5291-00a9-4b21-9823-4a48b6e617d7
+          file: ./coverage.txt
           fail_ci_if_error: true

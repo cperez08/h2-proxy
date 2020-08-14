@@ -1,0 +1,3 @@
+gen-coverage: ## Run tests with coverage
+	go test -short -coverprofile coverage.out -covermode=atomic ./...
+	cat coverage.out >> coverage.txt
