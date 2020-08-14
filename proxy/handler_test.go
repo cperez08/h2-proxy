@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"golang.org/x/net/http2"
 )
@@ -49,6 +50,7 @@ func TestProxyHandler(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "http://localhost:7070/ok", ioutil.NopCloser(bytes.NewReader([]byte(`{"req": "1"}`))))
 
+	// make request to proxy which redirets the call to our fake handler
 	response, err := cli.Do(req)
 	if err != nil {
 		t.Log("error performing requests", err)
@@ -141,6 +143,48 @@ func TestProxyHandlerWithResponseError(t *testing.T) {
 	}
 }
 
+func TestForceRequestError(t *testing.T) {
+	FakeProxyListerner, err := net.Listen("tcp", "0.0.0.0:7070")
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
+
+	FakeServerListerner, err := net.Listen("tcp", "0.0.0.0:7090")
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
+
+	defer FakeProxyListerner.Close()
+	defer FakeServerListerner.Close()
+
+	go SetUpFakeServerProxy(FakeProxyListerner)
+	go SetUpTimeoutServer(FakeServerListerner)
+
+	tr := &http2.Transport{
+		DisableCompression: true,
+		AllowHTTP:          true,
+		DialTLS: func(netw, addr string, cfg *tls.Config) (net.Conn, error) {
+			return net.Dial(netw, addr)
+		},
+	}
+
+	cli := &http.Client{Transport: tr}
+
+	req, _ := http.NewRequest(http.MethodGet, "http://localhost:7070/ok", ioutil.NopCloser(bytes.NewReader([]byte(`{"req": "1"}`))))
+	response, err := cli.Do(req)
+	if err != nil {
+		t.Log("error performing requests", err)
+		t.Fail()
+	}
+
+	if response.StatusCode != http.StatusInternalServerError {
+		t.Log("expecting connection errors")
+		t.Fail()
+	}
+}
+
 func SetUpFakeServerProxy(lis net.Listener) {
 	t := &http2.Transport{
 		DisableCompression: true,
@@ -183,6 +227,34 @@ func SetUpFakeServer(lis net.Listener) {
 	}
 }
 
+func SetUpTimeoutServer(lis net.Listener) {
+	server := http2.Server{}
+	count := 1
+	for {
+		conn, err := lis.Accept()
+		if err != nil {
+			log.Println("error accepting new connection ", err)
+		}
+
+		// force timeout error
+		if count == 1 {
+			t := time.Now()
+			conn.SetDeadline(t.Add(time.Microsecond))
+			count++
+		}
+
+		// force return in the retry
+		if conn == nil {
+			return
+		}
+
+		server.ServeConn(conn, &http2.ServeConnOpts{
+			Handler:    FakeHandler(),
+			BaseConfig: &http.Server{},
+		})
+	}
+}
+
 func FakeHandler() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		headers := map[string]string{"server": "fake-server", "version": "v1"}
@@ -191,6 +263,7 @@ func FakeHandler() http.HandlerFunc {
 		for k, v := range headers {
 			w.Header().Add(k, v)
 		}
+
 		if strings.Contains(r.URL.String(), "/ok") {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"status":"ok"}`))

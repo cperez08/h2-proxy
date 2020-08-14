@@ -23,66 +23,83 @@ const (
 func Handler(config *config.ProxyConfig, cli *http.Client) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		url := r.URL
-		url.Host = config.TargetHost + ":" + config.TargetPort
-		url.Scheme = defaultScheme
-
-		reqBody, err := ioutil.ReadAll(r.Body)
+		proxyReq, reqSize, err := createRequest(r, config)
 		if err != nil {
-			HandleError(&w, r, fmt.Sprintf("[%s] error reading request", config.ProxyName))
+			HandleError(&w, r, err.Error(), config.PrintLogs)
 			return
 		}
 
-		proxyReq, err := http.NewRequest(r.Method, url.String(), ioutil.NopCloser(bytes.NewReader(reqBody)))
+		rs, err := cli.Do(proxyReq)
 		if err != nil {
-			HandleError(&w, r, fmt.Sprintf("[%s] error parsing request", config.ProxyName))
+			HandleError(&w, r, fmt.Sprintf("[%s] error performing request to target: "+err.Error(), config.ProxyName), config.PrintLogs)
 			return
 		}
 
-		proxyReq.Header = r.Header.Clone()
-		proxyReq.Header.Set(forwardedHostHeader, r.Host)
-		proxyReq.Header.Set(forwardedForHeder, r.RemoteAddr)
-		proxyReq.Header.Set(proxiedByForHeder, config.ProxyName)
-
-		proxyReq.Trailer = r.Trailer.Clone()
-		rs, er := cli.Do(proxyReq)
-		if er != nil {
-			HandleError(&w, r, fmt.Sprintf("[%s] error performing request to target: "+err.Error(), config.ProxyName))
-			return
-		}
-
-		for k, vals := range rs.Header {
-			for _, val := range vals {
-				w.Header().Add(k, val)
-			}
-		}
-
-		w.Header().Add(proxiedByForHeder, config.ProxyName)
-		rsBody, err := ioutil.ReadAll(rs.Body)
+		rsSize, err := writeResponse(w, rs, config)
 		if err != nil {
-			HandleError(&w, r, fmt.Sprintf("[%s] error reading target response", config.ProxyName))
+			HandleError(&w, r, err.Error(), config.PrintLogs)
 			return
-		}
-
-		w.WriteHeader(rs.StatusCode)
-		defer rs.Body.Close()
-		w.Write(rsBody)
-
-		for t, vals := range rs.Trailer {
-			for _, val := range vals {
-				w.Header().Add(http.TrailerPrefix+t, val)
-			}
 		}
 
 		if config.PrintLogs {
-			PrintLog(start, len(reqBody), len(rsBody), r, config.CompactLogs)
+			PrintLog(start, reqSize, rsSize, r, config.CompactLogs)
 		}
 	})
 }
 
+func createRequest(r *http.Request, config *config.ProxyConfig) (_ *http.Request, requestSize int, _ error) {
+	url := r.URL
+	url.Host = config.TargetHost + ":" + config.TargetPort
+	url.Scheme = defaultScheme
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, 0, fmt.Errorf("[%s] error reading request", config.ProxyName)
+	}
+
+	proxyReq, err := http.NewRequest(r.Method, url.String(), ioutil.NopCloser(bytes.NewReader(reqBody)))
+	if err != nil {
+		return nil, 0, fmt.Errorf("[%s] error parsing request", config.ProxyName)
+	}
+
+	proxyReq.Header = r.Header.Clone()
+	proxyReq.Header.Set(forwardedHostHeader, r.Host)
+	proxyReq.Header.Set(forwardedForHeder, r.RemoteAddr)
+	proxyReq.Header.Set(proxiedByForHeder, config.ProxyName)
+
+	proxyReq.Trailer = r.Trailer.Clone()
+
+	return proxyReq, len(reqBody), nil
+}
+
+func writeResponse(w http.ResponseWriter, rs *http.Response, config *config.ProxyConfig) (responseSize int, _ error) {
+	for k, vals := range rs.Header {
+		for _, val := range vals {
+			w.Header().Add(k, val)
+		}
+	}
+
+	w.Header().Add(proxiedByForHeder, config.ProxyName)
+	rsBody, err := ioutil.ReadAll(rs.Body)
+	if err != nil {
+		return 0, fmt.Errorf("[%s] error reading target response", config.ProxyName)
+	}
+
+	w.WriteHeader(rs.StatusCode)
+	defer rs.Body.Close()
+	w.Write(rsBody)
+
+	for t, vals := range rs.Trailer {
+		for _, val := range vals {
+			w.Header().Add(http.TrailerPrefix+t, val)
+		}
+	}
+
+	return len(rsBody), nil
+}
+
 // PrintLog prints in stout basic information about the request and response
 func PrintLog(t time.Time, reqSize int, resSize int, r *http.Request, compact bool) {
-	reqID := r.Header.Get("X-Request-Id")
 	logStr := ""
 
 	if compact {
@@ -92,7 +109,7 @@ func PrintLog(t time.Time, reqSize int, resSize int, r *http.Request, compact bo
 	}
 
 	logStr = fmt.Sprintf(logStr,
-		reqID,
+		r.Header.Get("X-Request-Id"),
 		r.URL.Path,
 		r.Proto,
 		time.Since(t).Milliseconds(),

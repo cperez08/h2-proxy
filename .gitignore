@@ -15,3 +15,4 @@
 # vendor/
 .envrc
 .go-version
+h2-proxy

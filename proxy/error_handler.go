@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -15,7 +16,16 @@ const (
 )
 
 // HandleError ...
-func HandleError(w *http.ResponseWriter, r *http.Request, errMsg string) {
+func HandleError(w *http.ResponseWriter, r *http.Request, errMsg string, printLogs bool) {
+	if printLogs {
+		log.Println(fmt.Sprintf(`{"rq_id": "%s", "rq_path": "%s", "rq_proto": "%s", "message": %s}`,
+			r.Header.Get("X-Request-Id"),
+			r.URL.Path,
+			r.Proto,
+			errMsg,
+		))
+	}
+
 	ct := r.Header.Get(contentType)
 	if strings.Contains(ct, "grpc") {
 		HandleGRPCError(w, ct, errMsg)

@@ -13,6 +13,7 @@ import (
 
 	"golang.org/x/net/http2"
 
+	"github.com/cperez08/h2-proxy/config"
 	"github.com/cperez08/h2-proxy/pool"
 	"github.com/cperez08/h2-proxy/proxy"
 )
@@ -26,25 +27,7 @@ func main() {
 		log.Fatal("error loading yaml config", err)
 	}
 
-	t := &http2.Transport{
-		DisableCompression: true,
-		AllowHTTP:          true,
-		DialTLS: func(netw, addr string, cfg *tls.Config) (net.Conn, error) {
-			return net.Dial(netw, addr)
-		},
-	}
-
-	pool, err := pool.NewConnectionPool(ctx, cfg, t)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	t.ConnPool = pool
-	cli := &http.Client{Transport: t}
-
-	server := http2.Server{
-		IdleTimeout: time.Minute * time.Duration(cfg.IdleTimeout),
-	}
+	server, cli := InitServer(ctx, cfg)
 
 	l, err := net.Listen("tcp", cfg.ProxyAddres)
 	if err != nil {
@@ -80,4 +63,28 @@ func main() {
 			BaseConfig: &http.Server{},
 		})
 	}
+}
+
+func InitServer(ctx context.Context, cfg *config.ProxyConfig) (*http2.Server, *http.Client) {
+	t := &http2.Transport{
+		DisableCompression: true,
+		AllowHTTP:          true,
+		DialTLS: func(netw, addr string, cfg *tls.Config) (net.Conn, error) {
+			return net.Dial(netw, addr)
+		},
+	}
+
+	pool, err := pool.NewConnectionPool(ctx, cfg, t)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	t.ConnPool = pool
+	cli := &http.Client{Transport: t}
+
+	server := &http2.Server{
+		IdleTimeout: time.Minute * time.Duration(cfg.IdleTimeout),
+	}
+
+	return server, cli
 }

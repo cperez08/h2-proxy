@@ -75,4 +75,6 @@ func TestPickConnectionFromRandomBalancer(t *testing.T) {
 		t.Log("return unexpected connection")
 		t.Fail()
 	}
+
+	b.RebuildBalancer(pool) // increase coverage this does not do anything
 }

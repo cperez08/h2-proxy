@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/cperez08/h2-proxy/config"
+	"github.com/cperez08/h2-proxy/conn"
+	"github.com/cperez08/h2-proxy/lb"
 	"golang.org/x/net/http2"
 )
 
@@ -136,6 +138,12 @@ func TestGetNoConnection(t *testing.T) {
 		t.Log("expecting error due to no active connection")
 		t.Fail()
 	}
+}
+
+// TestForceRefreshError test made specially for increasing code coverage
+func TestForceRefreshError(t *testing.T) {
+	cp := &connectionPool{connections: []*conn.Connection{{Address: "127.0.0.1:8080", IsActive: true}}, balancer: &lb.NoBalancer{}}
+	cp.refreshConnections([]string{"127.0.0.1:8080"})
 }
 
 func TestKillConnectionError(t *testing.T) {

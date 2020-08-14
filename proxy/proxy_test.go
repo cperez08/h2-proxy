@@ -61,6 +61,22 @@ func TestNewProxyFromFile(t *testing.T) {
 	RemoveTmpFile(fileName)
 }
 
+func TestLogOptions(t *testing.T) {
+	os.Setenv("H2_PROXY_TARGET_HOST", "127.0.0.1")
+	os.Setenv("H2_PROXY_TARGET_PORT", "8080")
+	os.Setenv("H2_PROXY_PRINT_LOGS", "nope")
+	Defaultcfg, _ := NewProxyFromFile("../config/noexists.yaml")
+	assert.Equal(t, Defaultcfg.PrintLogs, false)
+
+	os.Setenv("H2_PROXY_PRINT_LOGS", "true")
+	Defaultcfg, _ = NewProxyFromFile("../config/noexists.yaml")
+	assert.Equal(t, Defaultcfg.PrintLogs, true)
+
+	os.Setenv("H2_PROXY_PRINT_LOGS", "false")
+	Defaultcfg, _ = NewProxyFromFile("../config/noexists.yaml")
+	assert.Equal(t, Defaultcfg.PrintLogs, false)
+}
+
 func CreateTmpFile(name string, content []byte) {
 	ioutil.WriteFile("../config/"+name, content, 0644)
 }
