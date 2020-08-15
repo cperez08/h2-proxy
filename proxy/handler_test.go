@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -181,6 +183,36 @@ func TestForceRequestError(t *testing.T) {
 
 	if response.StatusCode != http.StatusInternalServerError {
 		t.Log("expecting connection errors")
+		t.Fail()
+	}
+}
+
+func TestCreateRequest(t *testing.T) {
+	var fr io.Reader = &FakeReader{}
+	req, err := http.NewRequest("GET", "localhost:9090", fr)
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
+
+	if _, _, err := createRequest(req, cfg); err == nil {
+		t.Log("expected error creating request")
+		t.Fail()
+	}
+
+	req = &http.Request{Method: "¡™¢", Body: ioutil.NopCloser(bytes.NewBuffer([]byte(``))), Header: make(http.Header), URL: &url.URL{Host: "localhost"}}
+	if _, _, err := createRequest(req, cfg); err == nil {
+		t.Log("expected error creating new proxy request")
+		t.Fail()
+	}
+}
+
+func TestWriteResponse(t *testing.T) {
+	wr := NewCustomeRsWriter()
+	var fr io.ReadCloser = &FakeReader{}
+	rs := &http.Response{StatusCode: 200, Header: make(http.Header), Body: fr}
+	if _, err := writeResponse(wr, rs, cfg); err == nil {
+		t.Log("expected error reading response")
 		t.Fail()
 	}
 }

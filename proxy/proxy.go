@@ -34,8 +34,7 @@ func NewProxyFromFile(file string) (*config.ProxyConfig, error) {
 		return nil, err
 	}
 
-	err = yaml.Unmarshal(yamlFile, rs)
-	if err != nil {
+	if err = yaml.Unmarshal(yamlFile, rs); err != nil {
 		log.Printf("unmarshal: %v", err)
 		return nil, err
 	}

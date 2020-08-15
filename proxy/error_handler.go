@@ -16,7 +16,7 @@ const (
 )
 
 // HandleError ...
-func HandleError(w *http.ResponseWriter, r *http.Request, errMsg string, printLogs bool) {
+func HandleError(w http.ResponseWriter, r *http.Request, errMsg string, printLogs bool) {
 	if printLogs {
 		log.Println(fmt.Sprintf(`{"rq_id": "%s", "rq_path": "%s", "rq_proto": "%s", "message": %s}`,
 			r.Header.Get("X-Request-Id"),
@@ -36,19 +36,19 @@ func HandleError(w *http.ResponseWriter, r *http.Request, errMsg string, printLo
 }
 
 // HandleGRPCError ...
-func HandleGRPCError(w *http.ResponseWriter, ct, errMsg string) {
+func HandleGRPCError(w http.ResponseWriter, ct, errMsg string) {
 	// Add headers empty body and trailers
-	(*w).Header().Set(contentType, ct)
-	(*w).Header().Set(grpcMessage, errMsg)
-	(*w).Header().Set(grpcStatus, fmt.Sprintf("%d", http2.ErrCodeInternal))
-	(*w).Write([]byte(``))
-	(*w).Header().Add(http.TrailerPrefix+grpcStatus, fmt.Sprintf("%d", http2.ErrCodeInternal))
-	(*w).Header().Add(http.TrailerPrefix+grpcMessage, errMsg)
+	w.Header().Set(contentType, ct)
+	w.Header().Set(grpcMessage, errMsg)
+	w.Header().Set(grpcStatus, fmt.Sprintf("%d", http2.ErrCodeInternal))
+	w.Write([]byte(``))
+	w.Header().Add(http.TrailerPrefix+grpcStatus, fmt.Sprintf("%d", http2.ErrCodeInternal))
+	w.Header().Add(http.TrailerPrefix+grpcMessage, errMsg)
 }
 
 // HandleHTTPError ...
-func HandleHTTPError(w *http.ResponseWriter, errMsg string) {
-	(*w).WriteHeader(http.StatusInternalServerError)
-	(*w).Header().Add(contentType, "application/json")
-	(*w).Write([]byte(fmt.Sprintf(`{"message": "%s"}`, errMsg)))
+func HandleHTTPError(w http.ResponseWriter, errMsg string) {
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Header().Add(contentType, "application/json")
+	w.Write([]byte(fmt.Sprintf(`{"message": "%s"}`, errMsg)))
 }

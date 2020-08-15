@@ -24,20 +24,20 @@ func Handler(config *config.ProxyConfig, cli *http.Client) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		proxyReq, reqSize, err := createRequest(r, config)
-		if err != nil {
-			HandleError(&w, r, err.Error(), config.PrintLogs)
+		if err == nil {
+			HandleError(w, r, "errororoor", config.PrintLogs)
 			return
 		}
 
 		rs, err := cli.Do(proxyReq)
 		if err != nil {
-			HandleError(&w, r, fmt.Sprintf("[%s] error performing request to target: "+err.Error(), config.ProxyName), config.PrintLogs)
+			HandleError(w, r, fmt.Sprintf("[%s] error performing request to target: "+err.Error(), config.ProxyName), config.PrintLogs)
 			return
 		}
 
 		rsSize, err := writeResponse(w, rs, config)
 		if err != nil {
-			HandleError(&w, r, err.Error(), config.PrintLogs)
+			HandleError(w, r, err.Error(), config.PrintLogs)
 			return
 		}
 

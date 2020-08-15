@@ -20,6 +20,8 @@ import (
 
 const configDefaultLocation = "/etc/h2-proxy/config.yaml"
 
+var sigs = make(chan os.Signal, 1)
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cfg, err := proxy.NewProxyFromFile(configDefaultLocation)
@@ -27,14 +29,13 @@ func main() {
 		log.Fatal("error loading yaml config", err)
 	}
 
-	server, cli := InitServer(ctx, cfg)
+	server, cli := initClientAndServer(ctx, cfg)
 
 	l, err := net.Listen("tcp", cfg.ProxyAddres)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
@@ -65,7 +66,7 @@ func main() {
 	}
 }
 
-func InitServer(ctx context.Context, cfg *config.ProxyConfig) (*http2.Server, *http.Client) {
+func initClientAndServer(ctx context.Context, cfg *config.ProxyConfig) (*http2.Server, *http.Client) {
 	t := &http2.Transport{
 		DisableCompression: true,
 		AllowHTTP:          true,
