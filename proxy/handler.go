@@ -24,8 +24,8 @@ func Handler(config *config.ProxyConfig, cli *http.Client) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		proxyReq, reqSize, err := createRequest(r, config)
-		if err == nil {
-			HandleError(w, r, "errororoor", config.PrintLogs)
+		if err != nil {
+			HandleError(w, r, err.Error(), config.PrintLogs)
 			return
 		}
 
