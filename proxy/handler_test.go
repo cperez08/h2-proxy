@@ -113,7 +113,6 @@ func TestProxyHandlerWithResponseError(t *testing.T) {
 	}
 
 	cli := &http.Client{Transport: tr}
-
 	req, _ := http.NewRequest(http.MethodGet, "http://localhost:7070/fail", ioutil.NopCloser(bytes.NewReader([]byte(`{"req": "1"}`))))
 
 	response, err := cli.Do(req)
@@ -210,6 +209,7 @@ func TestCreateRequest(t *testing.T) {
 func TestWriteResponse(t *testing.T) {
 	wr := NewCustomeRsWriter()
 	var fr io.ReadCloser = &FakeReader{}
+	defer fr.Close()
 	rs := &http.Response{StatusCode: 200, Header: make(http.Header), Body: fr}
 	if _, err := writeResponse(wr, rs, cfg); err == nil {
 		t.Log("expected error reading response")

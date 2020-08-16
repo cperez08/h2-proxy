@@ -24,7 +24,7 @@ var sigs = make(chan os.Signal, 1)
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	cfg, err := proxy.NewProxyFromFile(configDefaultLocation)
+	cfg, err := proxy.NewProxyFromFile(getFileLocation())
 	if err != nil {
 		log.Fatal("error loading yaml config", err)
 	}
@@ -66,6 +66,15 @@ func main() {
 	}
 }
 
+func getFileLocation() string {
+	location := os.Getenv("H2_PROXY_CFG_LOCATION")
+	if location == "" {
+		return configDefaultLocation
+	}
+
+	return location
+}
+
 func initClientAndServer(ctx context.Context, cfg *config.ProxyConfig) (*http2.Server, *http.Client) {
 	t := &http2.Transport{
 		DisableCompression: true,
@@ -84,7 +93,7 @@ func initClientAndServer(ctx context.Context, cfg *config.ProxyConfig) (*http2.S
 	cli := &http.Client{Transport: t}
 
 	server := &http2.Server{
-		IdleTimeout: time.Minute * time.Duration(cfg.IdleTimeout),
+		IdleTimeout: time.Second * time.Duration(cfg.IdleTimeout),
 	}
 
 	return server, cli

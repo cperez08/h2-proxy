@@ -75,6 +75,15 @@ func TestLogOptions(t *testing.T) {
 	os.Setenv("H2_PROXY_PRINT_LOGS", "false")
 	Defaultcfg, _ = NewProxyFromFile("../config/noexists.yaml")
 	assert.Equal(t, Defaultcfg.PrintLogs, false)
+
+	os.Setenv("H2_PROXY_COMPACT_LOGS", "false")
+	Defaultcfg, _ = NewProxyFromFile("../config/noexists.yaml")
+	assert.Equal(t, Defaultcfg.PrintLogs, false)
+
+	os.Setenv("H2_PROXY_COMPACT_LOGS", "true")
+	Defaultcfg, _ = NewProxyFromFile("../config/noexists.yaml")
+	assert.Equal(t, Defaultcfg.PrintLogs, false)
+
 }
 
 func CreateTmpFile(name string, content []byte) {

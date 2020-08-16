@@ -51,6 +51,7 @@ func loadConfigWithDefaults(c *config.ProxyConfig) error {
 	host := os.Getenv("H2_PROXY_TARGET_HOST")
 	port := os.Getenv("H2_PROXY_TARGET_PORT")
 	logs := os.Getenv("H2_PROXY_PRINT_LOGS")
+	compact := os.Getenv("H2_PROXY_COMPACT_LOGS")
 
 	if strings.TrimSpace(host) == "" || strings.TrimSpace(port) == "" {
 		return errors.New("configs cannot be loaded via defaults since H2_PROXY_TARGET_HOST ors H2_PROXY_TARGET_PORT are not set")
@@ -62,6 +63,10 @@ func loadConfigWithDefaults(c *config.ProxyConfig) error {
 
 	if logs == "true" || logs == "false" {
 		c.PrintLogs, _ = strconv.ParseBool(logs)
+	}
+
+	if logs == "true" || logs == "false" {
+		c.CompactLogs, _ = strconv.ParseBool(compact)
 	}
 
 	c.SetDefaults()
