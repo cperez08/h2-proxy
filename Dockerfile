@@ -11,6 +11,10 @@ RUN go build ./...  && go build -o ./h2-proxy main.go
 
 FROM alpine
 
+LABEL maintaner="Andres Perez"
+LABEL language="golang"
+LABEL os="linux"
+
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /
