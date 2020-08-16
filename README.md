@@ -134,14 +134,14 @@ remember either load the environment variables and/or place the config file in a
 ## Bonus
 
 ## Usage with gRPC + Kuberentes
-In order to proxy gRPC services inside a Kubernetes cluster properly follow these steps:
+In order to proxy gRPC services properly inside a Kubernetes cluster follow these steps:
 
 - Set up the gRPC server, then deploy and create a headless service.
-- Set up the proxy create the deployment and service.
-- Set up the client gRPC pointing to the proxy, also you need to set up the client in a way this can balance the requests to the different proxy instances,for this support you can follow this [guideline](https://github.com/cperez08/dm-resolver) which exmplains how to set up properly the client gRPC based in a custom resolver (whihc is the one used in this project) 
+- Set up the proxy to create the deployment and service.
+- Set up the client gRPC pointing to the proxy, also you need to set up the client in a way this can balance the requests to the different proxy instances, for this support you can follow this [guideline](https://github.com/cperez08/dm-resolver) which explains how to set up properly the client gRPC based in a custom resolver (the one used in this project)
 - Test and start testing with requests
 
-__note: the most important part of this set up is the [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services)__ that needs to be set up for the server and for the proxy, with this configuration kubenetes keeps up to date all the pod IPs related to the service, so the resolver keeps in sync all to IPs where the calls need to be redirected to.
+__note: the most important part of this set up is the [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services)__ that needs to be done for the server and for the proxy (in the aforementioned example), with this configuration Kubernetes keeps up to date all the pod's IP related to the service, so the resolver keeps in sync all the IPs where the calls need to be redirected.
 
 ## Graphical representation
 
