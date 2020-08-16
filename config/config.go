@@ -31,7 +31,7 @@ func (c *ProxyConfig) SetDefaults() {
 
 	if c.IdleTimeout == 0 {
 		// value in minutes
-		c.IdleTimeout = 5
+		c.IdleTimeout = 300
 	}
 
 	if c.DNSConfig == nil {
@@ -39,7 +39,7 @@ func (c *ProxyConfig) SetDefaults() {
 			// value in seconds
 			RefreshRate: 60,
 			NeedRefresh: true,
-			BalancerAlg: "round_robin",
+			BalancerAlg: "none",
 		}
 	}
 }

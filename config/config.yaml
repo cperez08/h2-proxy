@@ -2,9 +2,10 @@ proxy_address: '0.0.0.0:8080' ## ports exposed in the container 8080 8090 50060 
 proxy_name: 'h2-proxy'
 target_host: '127.0.0.1'
 target_port: '7090'
-idle_timeout: 5 ## value in minutes
+idle_timeout: 300
 print_logs: true
+compact_logs: false
 dns_config:
-  refresh_rate: 45 ## value in seconds
+  refresh_rate: 60
   need_refresh: false
   balancer_alg: random
