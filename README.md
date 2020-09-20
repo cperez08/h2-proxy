@@ -56,14 +56,14 @@ If yaml configuration wants to be used then the file needs to be placed inside `
 proxy_address: '0.0.0.0:50060'
 proxy_name: 'h2-proxy'
 target_host: '127.0.0.1'
-target_port: '7090'
+target_port: '50051'
 idle_timeout: 300
 print_logs: true
 compact_logs: true
 dns_config:
   refresh_rate: 45
-  need_refresh: false
-  balancer_alg: random
+  need_refresh: true
+  balancer_alg: round_robin
 ```
 
 - `proxy_address:` proxy address is the interface and the port the proxy will be listening on, for docker the ports exposed by the container are 8080 8090 50060 50061, default value is `0.0.0.0:50060`
