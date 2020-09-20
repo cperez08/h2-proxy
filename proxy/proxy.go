@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/cperez08/h2-proxy/config"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // NewProxyGRPC ...
