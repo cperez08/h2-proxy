@@ -55,7 +55,7 @@ If yaml configuration wants to be used then the file needs to be placed inside `
 ```yaml
 proxy_address: '0.0.0.0:50060'
 proxy_name: 'h2-proxy'
-target_host: '127.0.0.1'
+target_host: 'my-target-domain'
 target_port: '50051'
 idle_timeout: 300
 print_logs: true
